@@ -1,0 +1,122 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev_v2.db"
+}
+
+// Models
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  phone     String?
+  role      String   @default("TENANT") // SUPER_ADMIN, KOST_ADMIN, STAFF, TENANT
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  managedKosts      Kost[]             @relation("KostAdmin")
+  bookings          Booking[]
+  notifications     Notification[]
+  emergencyContacts EmergencyContact[]
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  type      String   // INFO, WARNING, SUCCESS, ERROR
+  title     String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model EmergencyContact {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  relation  String
+  phone     String
+  createdAt DateTime @default(now())
+}
+
+model RentalAgreement {
+  id        String    @id @default(uuid())
+  bookingId String    @unique
+  booking   Booking   @relation(fields: [bookingId], references: [id])
+  content   String
+  isSigned  Boolean   @default(false)
+  signedAt  DateTime?
+  createdAt DateTime  @default(now())
+}
+
+model Kost {
+  id          String   @id @default(uuid())
+  name        String
+  address     String
+  description String?
+  phone       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  adminId String
+  admin   User   @relation("KostAdmin", fields: [adminId], references: [id])
+  rooms   Room[]
+}
+
+model Room {
+  id           String     @id @default(uuid())
+  kostId       String
+  kost         Kost       @relation(fields: [kostId], references: [id])
+  name         String
+  price        Float
+  status       String     @default("AVAILABLE") // AVAILABLE, OCCUPIED, MAINTENANCE
+  description  String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // Relations
+  bookings Booking[]
+}
+
+model Booking {
+  id          String        @id @default(uuid())
+  userId      String
+  user        User          @relation(fields: [userId], references: [id])
+  roomId      String
+  room        Room          @relation(fields: [roomId], references: [id])
+  startDate   DateTime
+  endDate     DateTime
+  totalAmount Float
+  status      String        @default("PENDING_APPROVAL") // PENDING_APPROVAL, WAITING_DP, DP_PAID, APPROVED_UNPAID, PAID, REJECTED, EXPIRED, CANCELLED
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // Relations
+  payments        Payment[]
+  rentalAgreement RentalAgreement?
+}
+
+model Payment {
+  id        String        @id @default(uuid())
+  bookingId String
+  booking   Booking       @relation(fields: [bookingId], references: [id])
+  amount    Float
+  status    String        @default("PENDING") // PENDING, PAID, REJECTED, EXPIRED
+  proofUrl  String?
+  paidAt    DateTime?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
