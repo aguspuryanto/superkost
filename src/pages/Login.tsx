@@ -63,7 +63,32 @@ export default function Login() {
             Login
           </button>
         </form>
-        <p className="mt-4 text-center">
+
+        <div className="mt-6 pt-6 border-t border-gray-200">
+          <p className="text-sm text-gray-500 mb-3 text-center">Demo Accounts</p>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setEmail('admin@demo.com');
+                setPassword('password123');
+              }}
+              className="flex-1 bg-gray-100 text-gray-700 p-2 rounded text-sm hover:bg-gray-200"
+            >
+              Admin
+            </button>
+            <button
+              onClick={() => {
+                setEmail('tenant@demo.com');
+                setPassword('password123');
+              }}
+              className="flex-1 bg-gray-100 text-gray-700 p-2 rounded text-sm hover:bg-gray-200"
+            >
+              Tenant
+            </button>
+          </div>
+        </div>
+
+        <p className="mt-6 text-center text-sm">
           Don't have an account? <a href="/register" className="text-blue-500">Register</a>
         </p>
       </div>
